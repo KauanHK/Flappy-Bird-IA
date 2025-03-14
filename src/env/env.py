@@ -50,7 +50,8 @@ class FlappyBird:
         self.next_pipe = next_pipe
         for bird, action in zip(self.birds, actions):
             bird.update(bool(action), next_pipe)
-            bird.score += scored
+            if not bird.is_dead:
+                bird.score += scored
 
         birds_alive = list(filter(lambda b: not b.is_dead, self.birds))
         if not birds_alive:
