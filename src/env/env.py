@@ -101,7 +101,6 @@ class FlappyBird:
         """Renderiza o ambiente. Se o ambiente não
         estiver configurado para renderizar, lançará uma exceção."""
 
-        self._check_is_not_closed()
         self._screen.fill((0, 0, 0))
 
         if self.gui:
