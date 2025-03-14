@@ -1,6 +1,5 @@
 import pygame as pg
 from pathlib import Path
-from typing import NamedTuple
 
 
 IMAGES_PATH = Path(__file__).parent.parent.parent / 'assets' / 'images'
@@ -9,7 +8,10 @@ print(IMAGES_PATH)
 SCREEN_SIZE = (800, 600)
 SCREEN_WIDTH = SCREEN_SIZE[0]
 SCREEN_HEIGHT = SCREEN_SIZE[1]
+
 SCREEN_CENTER = (SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)
+SCREEN_CENTER_X = SCREEN_CENTER[0]
+SCREEN_CENTER_Y = SCREEN_CENTER[1]
 SCREEN_RECT = pg.Rect((0, 0), SCREEN_SIZE)
 
 
@@ -21,8 +23,8 @@ class Image:
 
 
 def load_img(image: str, size: tuple[int, int] | None = None) -> pg.Surface:
-    
-    image = pg.image.load(image).convert_alpha()
+
+    image = pg.image.load(image)
     if size is not None:
         image = pg.transform.scale(image, size)
     return image
