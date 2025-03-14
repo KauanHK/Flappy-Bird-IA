@@ -1,7 +1,7 @@
 import pygame as pg
 from .bird import Bird
 from .pipe import Pipes, Pipe
-from .utils import SCREEN_SIZE
+from .utils import SCREEN_SIZE, SCREEN_CENTER_X, centralize_x
 import math
 from typing import NamedTuple, Literal
 
@@ -28,9 +28,12 @@ class FlappyBird:
 
         self.gui: bool = gui
         if self.gui:
-            from .background import Background
-            self.background: Background = Background()
             pg.init()
+            from .background import Background
+            self.background = Background()
+            self.score = 0
+            self._font = pg.font.SysFont('Arial', 48)
+            self._surface_score = self._create_surface_score()
             self._screen = pg.display.set_mode(SCREEN_SIZE)
             self._clock = pg.time.Clock()
 
@@ -45,9 +48,14 @@ class FlappyBird:
         if self.gui:
             self.background.update()
         self.pipes.update()
+
         next_pipe = self.pipes.get_next_pipe(Bird.X)
         scored = self.next_pipe != next_pipe
         self.next_pipe = next_pipe
+        if scored:
+            self.score += 1
+            self._surface_score = self._create_surface_score()
+
         for bird, action in zip(self.birds, actions):
             bird.update(bool(action), next_pipe)
             if not bird.is_dead:
@@ -81,6 +89,7 @@ class FlappyBird:
         for bird in self.birds:
             bird.render(self._screen)
         self.pipes.render(self._screen)
+        self._screen.blit(self._surface_score, (centralize_x(self._surface_score, SCREEN_CENTER_X)[0], 20))
 
         self._clock.tick(60)
         pg.display.flip()
@@ -89,6 +98,10 @@ class FlappyBird:
         """Fecha o ambiente. Se já estiver fechado, não tem efeito algum."""
         self.done = True
         pg.quit()
+
+    def _create_surface_score(self) -> pg.Surface:
+        """Atualiza o score."""
+        return self._font.render(str(self.score), True, (255, 255, 255))
 
     def _check_is_not_closed(self) -> None:
         """Verifica se o ambiente está em funcionamento.
