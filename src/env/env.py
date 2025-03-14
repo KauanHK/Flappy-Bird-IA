@@ -1,7 +1,7 @@
 import pygame as pg
 from .bird import Bird
 from .pipe import Pipes, Pipe
-from .utils import SCREEN_WIDTH, SCREEN_SIZE
+from .utils import SCREEN_SIZE
 import math
 from typing import NamedTuple, Literal
 
@@ -28,6 +28,8 @@ class FlappyBird:
 
         self.gui: bool = gui
         if self.gui:
+            from .background import Background
+            self.background: Background = Background()
             pg.init()
             self._screen = pg.display.set_mode(SCREEN_SIZE)
             self._clock = pg.time.Clock()
@@ -40,6 +42,8 @@ class FlappyBird:
 
         self._check_is_not_closed()
 
+        if self.gui:
+            self.background.update()
         self.pipes.update()
         next_pipe = self.pipes.get_next_pipe(Bird.X)
         scored = self.next_pipe != next_pipe
@@ -71,6 +75,8 @@ class FlappyBird:
         self._check_is_not_closed()
         self._screen.fill((0, 0, 0))
 
+        if self.gui:
+            self.background.render(self._screen)
         for bird in self.birds:
             bird.render(self._screen)
         self.pipes.render(self._screen)
