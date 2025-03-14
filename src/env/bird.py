@@ -64,5 +64,5 @@ class Bird:
         offset_upper = (offset_x, pipe.y_upper - self.y)
         offset_lower = (offset_x, pipe.y_lower - self.y)
         print(f'{offset_upper = }, {offset_lower = }', end = '\r')
-        return self.y < 0 or self.y >= Bird.FLOOR or Bird.MASK.overlap(pipe.MASK_UPPER, offset_upper) or Bird.MASK.overlap(pipe.MASK_LOWER, offset_lower)
+        return self.y < -Bird.HEIGHT//2 or self.y > Bird.FLOOR or Bird.MASK.overlap(pipe.MASK_UPPER, offset_upper) or Bird.MASK.overlap(pipe.MASK_LOWER, offset_lower)
         
