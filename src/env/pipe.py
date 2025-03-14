@@ -55,6 +55,9 @@ class Pipe:
         screen.blit(self.IMAGE_UPPER, (self.x, self.y_upper))
         screen.blit(self.IMAGE_LOWER, (self.x, self.y_lower))
 
+    def __repr__(self) -> str:
+        return f'Pipe(x={self.x}, y_lower={self.y_lower}, y_upper={self.y_upper})'
+
 
 class Pipes:
 
@@ -107,3 +110,9 @@ class Pipes:
 
     def __iter__(self) -> Iterator[Pipe]:
         return iter(self.pipes)
+
+    def __len__(self) -> int:
+        return len(self.pipes)
+
+    def __repr__(self) -> str:
+        return f'Pipes({self.pipes})'

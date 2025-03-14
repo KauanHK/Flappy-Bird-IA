@@ -130,3 +130,6 @@ class FlappyBird:
 
         if self.done:
             raise EnvClosedError('Ambiente já fechado.')
+
+    def __repr__(self) -> str:
+        return f'FlappyBird(birds_alive={len(self.birds)}, score={self.score})'

@@ -63,6 +63,8 @@ class Bird:
         offset_x = pipe.x - self.X
         offset_upper = (offset_x, pipe.y_upper - self.y)
         offset_lower = (offset_x, pipe.y_lower - self.y)
-        print(f'{offset_upper = }, {offset_lower = }', end = '\r')
         return self.y < -Bird.HEIGHT//2 or self.y > Bird.FLOOR or Bird.MASK.overlap(pipe.MASK_UPPER, offset_upper) or Bird.MASK.overlap(pipe.MASK_LOWER, offset_lower)
+
+    def __repr__(self) -> str:
+        return f'Bird(y={self.y}, score={self.score}, is_dead={self.is_dead})'
         
