@@ -1,30 +1,27 @@
 import pygame as pg
+import numpy as np
+from numpy.typing import NDArray
 from .bird import Bird
 from .pipe import Pipes, Pipe
 from .utils import SCREEN_SIZE, SCREEN_CENTER_X, centralize_x
-import math
-from typing import NamedTuple, Literal
+from typing import Literal
 
 
 class EnvClosedError(BaseException): ...
 
 
-class State(NamedTuple):
-    """Estados do ambiente."""
-
-    distance_upper: float
-    distance_lower: float
-    done: bool
-
-
 class FlappyBird:
 
-    def __init__(self, birds: int, gui: bool = False) -> None:
+    def __init__(self, num_birds: int, gui: bool = False) -> None:
 
-        self.birds: list[Bird] = [Bird() for _ in range(birds)]
+        self.num_birds: int = num_birds
+        self.birds: list[Bird] = [Bird() for _ in range(num_birds)]
         self.pipes = Pipes()
         self.done: bool = False
         self.next_pipe: Pipe = self.pipes.get_next_pipe(Bird.X)
+
+        self.steps = 0
+        self.frames_alive = [0]*self.num_birds
 
         self.gui: bool = gui
         if self.gui:
@@ -37,7 +34,26 @@ class FlappyBird:
             self._screen = pg.display.set_mode(SCREEN_SIZE)
             self._clock = pg.time.Clock()
 
-    def step(self, actions: list[Literal[0, 1] | bool]) -> list[State]:
+    def reset(self) -> list[NDArray]:
+        """Reinicia o ambiente."""
+
+        self.birds: list[Bird] = [Bird() for _ in range(self.num_birds)]
+        self.pipes = Pipes()
+        self.done: bool = False
+        self.next_pipe: Pipe = self.pipes.get_next_pipe(Bird.X)
+
+        self.steps = 0
+        self.frames_alive = [0] * self.num_birds
+
+        if self.gui:
+            from .background import Background
+            self.background = Background()
+            self.score = 0
+            self._surface_score = self._create_surface_score()
+
+        return self.get_states()
+
+    def step(self, actions: list[Literal[0, 1] | bool]) -> list[NDArray]:
         """Executa uma etapa no ambiente retorna o estado do jogo.
 
         :param actions: lista com as ações de cada pássaro.
@@ -57,40 +73,34 @@ class FlappyBird:
             self.score += 1
             self._surface_score = self._create_surface_score()
 
-        states: list[State] = []
+        i = 0
         for bird, action in zip(self.birds, actions):
 
+            if bird.is_dead:
+                continue
             bird.update(bool(action), next_pipe)
             if bird.is_dead:
-                states.append(State(0, 0, True))
-                continue
-            bird.score += scored
+                self.frames_alive[i] = self.steps
+            else:
+                bird.score += scored
+            i += 1
 
-            # A distância do pássaro para o cano do topo é
-            # a distância entre o bottomleft do cano do topo e o topright do pássaro
-            # A distância do pássaro para o cano de baixo é
-            # a distância entre o topleft do cano de baixo e o bottomright do pássaro
-            # Usa-se pitágoras para fazer esse cálculo
-            # d^2 = dx^2 + dy^2
-            # SE O PÁSSARO ESTIVER ENTRE OS CANOS, A DISTÂNCIA É APENAS A DIFERENÇA DO EIXO Y
+        self.steps += 1
 
-            bird_right = Bird.X + Bird.WIDTH
-            bird_top = bird.y
-            bird_bottom = bird.y + Bird.HEIGHT
+        return self.get_states()
 
-            pipe_left = next_pipe.x
-            pipe_lower_top = next_pipe.y_lower
-            pipe_upper_bottom = next_pipe.y_upper + Pipe.HEIGHT
+    def get_states(self) -> list[NDArray]:
 
-            if bird_right >= next_pipe.x:
-                states.append(State(bird_top - pipe_upper_bottom, pipe_lower_top - bird_bottom, True))
-                continue
+        states: list[NDArray] = []
+        for bird in self.birds:
 
-            states.append(State(
-                math.sqrt((pipe_left - bird_top) ** 2 + (pipe_upper_bottom - bird_top) ** 2),
-                math.sqrt((pipe_left - bird_right) ** 2 + (pipe_lower_top - bird_bottom) ** 2),
-                False
-            ))
+            states.append(np.array([
+                self.next_pipe.x - bird.X,
+                self.next_pipe.y_upper + Pipe.HEIGHT - bird.y,
+                self.next_pipe.y_lower - bird.y,
+                bird.velocity_y,
+                ])
+            )
 
         birds_alive = list(filter(lambda b: not b.is_dead, self.birds))
         self.done = not birds_alive
@@ -106,7 +116,8 @@ class FlappyBird:
         if self.gui:
             self.background.render(self._screen)
         for bird in self.birds:
-            bird.render(self._screen)
+            if not bird.is_dead:
+                bird.render(self._screen)
         self.pipes.render(self._screen)
         self._screen.blit(self._surface_score, (centralize_x(self._surface_score, SCREEN_CENTER_X)[0], 20))
 
