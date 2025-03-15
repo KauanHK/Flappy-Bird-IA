@@ -17,7 +17,7 @@ class NeuralNetwork:
             return
 
         self.weights = [
-            np.random.uniform(-0.5, 0.5, (16, 2)),
+            np.random.uniform(-0.5, 0.5, (16, 4)),
             np.random.uniform(-0.5, 0.5, (1, 16))
         ]
         self.bias = [
@@ -29,4 +29,4 @@ class NeuralNetwork:
 
         for weights, bias in zip(self.weights, self.bias):
             a = sigmoid(weights @ a + bias)
-        return a.argmax() > 0.5
+        return a[0][0] > 0.5
