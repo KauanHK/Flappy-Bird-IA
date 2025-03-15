@@ -3,7 +3,6 @@ from pathlib import Path
 
 
 IMAGES_PATH = Path(__file__).parent.parent.parent / 'assets' / 'images'
-print(IMAGES_PATH)
 
 SCREEN_SIZE = (800, 600)
 SCREEN_WIDTH = SCREEN_SIZE[0]
