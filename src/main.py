@@ -21,7 +21,8 @@ class FlappyBirdAI:
     MUTATION_RATE = 0.1  # Taxa de mutação
     MUTATION_STRENGTH = 0.2  # Força da mutação
 
-    SAVE_DIR = Path(__file__).parent.parent / "models" / datetime.now().strftime('%d%m%Y_%H-%M-%S')
+    MODELS_PATH = Path(__file__).parent.parent / "models"
+    SAVE_DIR = MODELS_PATH / datetime.now().strftime('%d-%m-%Y_%H:%M:%S')
     os.makedirs(SAVE_DIR, exist_ok = True)
 
     def __init__(self) -> None:
