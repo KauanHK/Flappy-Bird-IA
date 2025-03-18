@@ -30,8 +30,9 @@ class Bird:
         self.velocity_y: int = 0
         self.steps: int = 0
         self.is_alive: bool = True
+        self.score: int = 0
 
-    def update(self, action: bool | Literal[0, 1], next_pipe: Pipe) -> None:
+    def update(self, action: bool | Literal[0, 1], next_pipe: Pipe, scored: bool) -> None:
         """Atualiza um pássaro.
 
         :param action: 1 para pular, ou 0.
@@ -54,6 +55,7 @@ class Bird:
             self.is_alive = False
         else:
             self.steps += 1
+            self.score += scored
 
     def kill(self) -> None:
         self.is_alive = False
@@ -65,10 +67,17 @@ class Bird:
     def _collided(self, pipe: Pipe) -> bool:
         """Retorna True se o colidiu com pipe, senão False."""
 
-        offset_x = pipe.x - self.X
+        if self.y < -Bird.HEIGHT//2 or self.y > Bird.FLOOR:
+            return True
+
+        offset_x = pipe.x - Bird.X
+        if offset_x > Bird.WIDTH:
+            return False
+
         offset_upper = (offset_x, pipe.y_upper - self.y)
         offset_lower = (offset_x, pipe.y_lower - self.y)
-        return self.y < -Bird.HEIGHT//2 or self.y > Bird.FLOOR or Bird.MASK.overlap(pipe.MASK_UPPER, offset_upper) or Bird.MASK.overlap(pipe.MASK_LOWER, offset_lower)
+        return Bird.MASK.overlap(pipe.MASK_UPPER, offset_upper) is not None\
+                or Bird.MASK.overlap(pipe.MASK_LOWER, offset_lower) is not None
 
     def __repr__(self) -> str:
         return f'Bird(y={self.y}, velocity_y={self.velocity_y}, steps={self.steps}, is_alive={self.is_alive})'
