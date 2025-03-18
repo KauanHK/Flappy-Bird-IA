@@ -33,3 +33,8 @@ def mutate(nn: NeuralNetwork, rate: float = 0.05, strength: float = 0.1) -> None
         # Mutações para cada peso
         mutations = np.random.normal(0, strength, weights.shape)
         weights[mask] += mutations[mask]
+
+        # Mutações para cada bias
+        mask = np.random.random(bias.shape) < rate
+        mutations = np.random.normal(0, strength, bias.shape)
+        bias[mask] += mutations[mask]
