@@ -13,6 +13,10 @@ class Background:
 
         self.x: int = 0
 
+    def reset(self) -> None:
+
+        self.x = 0
+
     def update(self) -> None:
 
         self.x -= 1
