@@ -43,32 +43,37 @@ class FlappyBird:
 
         self._next_pipes = self.pipes.get_next_pipes(Bird.X)
         self.steps = 0
+        self.score = 0
 
         self.ui.reset()
 
         return self.get_states()
 
-    def step(self, actions: list[Literal[0, 1] | bool]) -> tuple[list[NDArray], bool]:
+    def step(self, actions: list[Literal[0, 1] | bool]) -> list[NDArray]:
         """Executa uma etapa no ambiente retorna o estado do jogo.
 
         :param actions: lista com as ações de cada pássaro.
         """
 
         self._check_is_not_closed()
+        if len(actions) != len(self.birds):
+            raise ValueError(f'O número de ações deve ser igual ao número de pássaros. {len(actions)} != {len(self.birds)}')
 
         self.pipes.update()
 
-        next_pipe = self.pipes.get_next_pipes(Bird.X)
-        scored = self._next_pipes[0] != next_pipe[0]
-        self._next_pipes = next_pipe
+        next_pipes = self.pipes.get_next_pipes(Bird.X)
+        scored = self._next_pipes[0] != next_pipes[0]
+        self._next_pipes = next_pipes
+
+        self.score += scored
+        self.steps += 1
 
         for bird, action in zip(self.birds, actions):
             if bird.is_alive:
-                bird.update(bool(action), next_pipe[0])
+                bird.update(bool(action), next_pipes[0], scored)
 
-        self.ui.update(self.birds, scored)
-        self.steps += 1
-        return self.get_states(), list(map(lambda bird: not bird.is_alive, self.birds))
+        self.ui.update(len(self.birds_alive), self.score)
+        return self.get_states()
 
     def get_states(self) -> list[NDArray]:
 
