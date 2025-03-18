@@ -28,8 +28,8 @@ class Bird:
         
         self.y: int = y
         self.velocity_y: int = 0
-        self.score: int = 0
-        self.is_dead: bool = False
+        self.steps: int = 0
+        self.is_alive: bool = True
 
     def update(self, action: bool | Literal[0, 1], next_pipe: Pipe) -> None:
         """Atualiza um pássaro.
@@ -38,7 +38,7 @@ class Bird:
         :param next_pipe: O cano à sua frente.
         """
 
-        if self.is_dead:
+        if not self.is_alive:
             return
 
         if not isinstance(action, bool) or action not in (0, 1):
@@ -51,7 +51,12 @@ class Bird:
         self.y += self.velocity_y
 
         if self._collided(next_pipe):
-            self.is_dead = True
+            self.is_alive = False
+        else:
+            self.steps += 1
+
+    def kill(self) -> None:
+        self.is_alive = False
 
     def render(self, screen: pg.Surface) -> None:
         """Renderiza o pássaro em screen."""
@@ -66,5 +71,5 @@ class Bird:
         return self.y < -Bird.HEIGHT//2 or self.y > Bird.FLOOR or Bird.MASK.overlap(pipe.MASK_UPPER, offset_upper) or Bird.MASK.overlap(pipe.MASK_LOWER, offset_lower)
 
     def __repr__(self) -> str:
-        return f'Bird(y={self.y}, score={self.score}, is_dead={self.is_dead})'
+        return f'Bird(y={self.y}, velocity_y={self.velocity_y}, steps={self.steps}, is_alive={self.is_alive})'
         

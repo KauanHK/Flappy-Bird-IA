@@ -2,6 +2,10 @@ import numpy as np
 from numpy.typing import NDArray
 
 
+def ReLu(x: NDArray) -> NDArray:
+    return np.maximum(0, x)
+
+
 def sigmoid(x: NDArray) -> NDArray:
     return 1 / (1 + np.exp(-x))
 
@@ -18,15 +22,16 @@ class NeuralNetwork:
 
         self.weights = [
             np.random.uniform(-0.5, 0.5, (16, 4)),
-            np.random.uniform(-0.5, 0.5, (1, 16))
+            np.random.uniform(-0.5, 0.5, (2, 16))
         ]
         self.bias = [
             np.random.uniform(-0.5, 0.5, (16, 1)),
-            np.random.uniform(-0.5, 0.5, (1, 1))
+            np.random.uniform(-0.5, 0.5, (2, 1))
         ]
 
     def predict(self, a: NDArray) -> bool:
 
-        for weights, bias in zip(self.weights, self.bias):
-            a = sigmoid(weights @ a + bias)
-        return a[0][0] > 0.5
+        for weights, bias in zip(self.weights[:-1], self.bias[:-1]):
+            a = ReLu(weights @ a + bias)
+        a = sigmoid(self.weights[-1] @ a + self.bias[-1])
+        return a.argmax()

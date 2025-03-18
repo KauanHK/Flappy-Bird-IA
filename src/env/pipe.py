@@ -83,15 +83,17 @@ class Pipes:
         for pipe in self.pipes:
             pipe.render(screen)
 
-    def get_next_pipe(self, x: int) -> Pipe:
+    def get_next_pipes(self, x: int) -> tuple[Pipe, Pipe]:
         """Retorna o cano mais próximo de `x`,
         considerando apenas os canos à sua frente,
         ou seja, o cano com o menor x entre os canos com x > `x`.
         """
 
-        for pipe in self.pipes:
+        for i, pipe in enumerate(self.pipes):
             if pipe.x + Pipe.WIDTH > x:
-                return pipe
+                if i == len(self.pipes) - 1:
+                    return pipe, pipe
+                return pipe, self.pipes[i+1]
 
         raise ValueError(f'Valor de x inválido ({x})')
 
