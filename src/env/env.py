@@ -27,8 +27,12 @@ class FlappyBird:
             self.ui: FlappyBirdUI = FlappyBirdUI()
 
     @property
+    def birds_alive(self) -> list[Bird]:
+        return list(filter(lambda b: b.is_alive, self.birds))
+
+    @property
     def done(self) -> bool:
-        return all(not bird.is_alive for bird in self.birds)
+        return len(self.birds_alive) == 0
     
     def reset(self) -> list[NDArray]:
         """Reinicia o ambiente."""
