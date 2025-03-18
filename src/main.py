@@ -159,11 +159,13 @@ class FlappyBirdAI:
 
         # Avaliar desempenho
         scores = [bird.score for bird in self.env.birds]
+        steps = [bird.steps for bird in self.env.birds]
         best_index = np.argmax(scores)
 
         # Atualizar melhor de todos os tempos
-        if scores[best_index] > self.best_steps_ever:
-            self.best_steps_ever = scores[best_index]
+        if steps[best_index] > self.best_steps_ever:
+            self.best_steps_ever = steps[best_index]
+            self.best_score_ever = scores[best_index]
             self.best_nn_ever = self.nns[best_index]
 
             # Salvar o novo melhor modelo
@@ -172,7 +174,7 @@ class FlappyBirdAI:
 
         # Exibir estatísticas
         print(f"Melhor pontuação: {scores[best_index]}")
-        print(f"Melhor pontuação de todos os tempos: {self.best_steps_ever}")
+        print(f"Melhor pontuação de todos os tempos: {self.best_score_ever}")
 
 
 if __name__ == '__main__':
