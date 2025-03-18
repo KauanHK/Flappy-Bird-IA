@@ -77,14 +77,19 @@ class FlappyBird:
 
     def get_states(self) -> list[NDArray]:
 
+        distance_x: float = (self._next_pipes[0].x - (Bird.X + Bird.WIDTH)) / SCREEN_WIDTH
+        distance_x = max(distance_x, 0)
+        y_upper: float = self._next_pipes[0].y_upper + Pipe.HEIGHT
+        y_lower: float = self._next_pipes[0].y_lower
+
         states: list[NDArray] = []
         for bird in self.birds:
-
+            bird_middle_right = bird.y + Bird.HEIGHT // 2
             states.append(np.array([
-                (self._next_pipes[0].x - bird.X + Bird.WIDTH) / SCREEN_WIDTH,
-                (self._next_pipes[0].y_upper + Pipe.HEIGHT - bird.y) / SCREEN_HEIGHT,
-                (self._next_pipes[0].y_lower - bird.y) / SCREEN_HEIGHT,
-                bird.velocity_y / SCREEN_HEIGHT,
+                distance_x,                                         # Distância horizontal para o próximo cano
+                (y_upper - bird_middle_right) / SCREEN_HEIGHT,      # Distância vertical para a abertura de cima
+                (y_lower - bird_middle_right) / SCREEN_HEIGHT,      # Distância vertical para a abertura de baixo
+                bird.velocity_y / SCREEN_HEIGHT,                    # Velocidade vertical do pássaro
                 ])
             )
 
