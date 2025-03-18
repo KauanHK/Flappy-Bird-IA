@@ -18,9 +18,10 @@ class FlappyBird:
         self.num_birds: int = num_birds
 
         self.birds: list[Bird] = [Bird() for _ in range(num_birds)]
-        self.pipes = Pipes()
+        self.pipes: Pipes = Pipes()
 
-        self.steps = 0
+        self.score: int = 0
+        self.steps: int = 0
         self._next_pipes: tuple[Pipe, Pipe] = self.pipes.get_next_pipes(Bird.X)
 
         if gui:
@@ -88,21 +89,22 @@ class FlappyBird:
         """Renderiza o ambiente. Se o ambiente não
         estiver configurado para renderizar, lançará uma exceção."""
 
-        self.ui.render(self.birds, self.pipes)
+        self.ui.render(self.birds_alive, self.pipes)
 
     def close(self) -> None:
         """Fecha o ambiente. Se já estiver fechado, não tem efeito algum."""
         
         for bird in self.birds:
             bird.kill()
-        pg.quit()
+        if hasattr(self, 'ui'):
+            self.ui.close()
 
     def _check_is_not_closed(self) -> None:
         """Verifica se o ambiente está em funcionamento.
         Se estiver fechado, lança uma exceção EnvClosedError,
         senão retorna None."""
 
-        if self.done:
+        if not self.birds_alive:
             raise EnvClosedError('Ambiente já fechado.')
 
     def __repr__(self) -> str:
