@@ -1,5 +1,6 @@
 import numpy as np
 from numpy.typing import NDArray
+from typing import Literal
 
 
 def ReLu(x: NDArray) -> NDArray:
@@ -29,7 +30,7 @@ class NeuralNetwork:
             np.random.uniform(-0.5, 0.5, (2, 1))
         ]
 
-    def predict(self, a: NDArray) -> bool:
+    def predict(self, a: NDArray) -> Literal[0, 1]:
 
         for weights, bias in zip(self.weights[:-1], self.bias[:-1]):
             a = ReLu(weights @ a + bias)
