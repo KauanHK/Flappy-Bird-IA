@@ -176,6 +176,55 @@ class FlappyBirdAI:
         print(f"Melhor pontuação: {scores[best_index]}")
         print(f"Melhor pontuação de todos os tempos: {self.best_score_ever}")
 
+    def run_model(self) -> None:
+
+        models = os.listdir(str(FlappyBirdAI.MODELS_PATH))
+        for i, model in enumerate(models):
+            print(f"{i}: {model}")
+
+        for _ in range(5):
+            try:
+                model_index = int(input('Escolha um modelo: '))
+            except (TypeError, ValueError, IndexError):
+                print('Valor inválido.')
+            else:
+                break
+        else:
+            raise ValueError('Nenhum número válido foi digitado.')
+
+        models_files_path = FlappyBirdAI.MODELS_PATH / models[model_index]
+        models_files = os.listdir(models_files_path)
+        for i, model in enumerate(models_files):
+            print(f"{i}: {model}")
+
+        for _ in range(5):
+            try:
+                model_index = int(input('Escolha um modelo: '))
+            except (TypeError, ValueError, IndexError):
+                print('Valor inválido.')
+            else:
+                break
+        else:
+            raise ValueError('Nenhum número válido foi digitado.')
+
+        path = models_files_path / models_files[model_index]
+        print(f"Carregando modelo {path}...")
+
+        with open(path, "rb") as f:
+            nn = pickle.load(f)
+        print(nn)
+
+        self.env.num_birds = 1
+        state = self.env.reset()[0]
+        while not self.env.done:
+            self.env.step([nn.predict(state.reshape(-1, 1))])
+            self.env.render()
 
 if __name__ == '__main__':
-    FlappyBirdAI().run()
+    # FlappyBirdAI().run()
+    try:
+        FlappyBirdAI().run_model()
+    except Exception as e:
+        import pygame as pg
+        pg.quit()
+        raise
