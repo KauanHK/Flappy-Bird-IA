@@ -1,6 +1,6 @@
 import pytest
-import pygame as pg
-from unittest.mock import patch
+
+from .conftest import MockMask
 from src.env import Bird, Pipe
 from src.env.bird import DeadBirdError
 from src.env.utils import SCREEN_CENTER_Y, SCREEN_WIDTH
@@ -8,10 +8,10 @@ from src.env.utils import SCREEN_CENTER_Y, SCREEN_WIDTH
 
 class TestBird:
 
-    def test_initialization(self, setup_bird):
+    def test_initialization(self, default_bird):
         """Teste de inicialização com valores padrão"""
 
-        bird = Bird()
+        bird = default_bird
 
         assert bird.y == SCREEN_CENTER_Y
         assert bird.velocity_y == 0
@@ -24,10 +24,10 @@ class TestBird:
         bird = Bird(y = custom_y)
         assert bird.y == custom_y
 
-    def test_update_no_action(self, setup_bird):
+    def test_update_no_action(self, default_bird):
         """Teste de atualização sem ação (não pular)"""
 
-        bird = Bird()
+        bird = default_bird
         pipe = Pipe.new_pipe(SCREEN_WIDTH)
 
         # Estado inicial
@@ -43,10 +43,10 @@ class TestBird:
         assert bird.is_alive == True  # Deve continuar vivo
         assert bird.score == 0  # Não deve pontuar
 
-    def test_update_with_jump(self, setup_bird):
+    def test_update_with_jump(self, default_bird):
         """Teste de atualização com ação de pular"""
 
-        bird = Bird()
+        bird = default_bird
         pipe = Pipe.new_pipe(x = SCREEN_WIDTH)
 
         initial_y = bird.y
@@ -61,10 +61,10 @@ class TestBird:
         assert bird.steps == 1
         assert bird.score == 0
 
-    def test_update_with_score(self, setup_bird):
+    def test_update_with_score(self, default_bird):
         """Teste de atualização com pontuação"""
 
-        bird = Bird()
+        bird = default_bird
         pipe = Pipe.new_pipe(x = SCREEN_WIDTH)
 
         # Atualizar e pontuar
@@ -77,28 +77,28 @@ class TestBird:
         'action',
         ((2,), ('jump',), (0.5,))
     )
-    def test_update_invalid_action(self, setup_bird, action):
+    def test_update_invalid_action(self, action, default_bird):
         """Teste com ação inválida"""
 
-        bird = Bird()
+        bird = default_bird
         pipe = Pipe.new_pipe(x = SCREEN_WIDTH)
 
         # Deve lançar ValueError para ações inválidas
         with pytest.raises(ValueError):
             bird.update(action, pipe, False)
 
-    def test_kill(self, setup_bird):
+    def test_kill(self, default_bird):
         """Teste do método kill"""
 
-        bird = Bird()
+        bird = default_bird
         assert bird.is_alive
         bird.kill()
         assert not bird.is_alive
 
-    def test_update_dead_bird(self, setup_bird):
+    def test_update_dead_bird(self, default_bird):
         """Teste de atualização com pássaro morto"""
 
-        bird = Bird()
+        bird = default_bird
         pipe = Pipe.new_pipe(x = SCREEN_WIDTH)
 
         initial_y = bird.y
@@ -114,7 +114,7 @@ class TestBird:
         assert bird.velocity_y == initial_velocity_y
         assert not bird.is_alive
 
-    def test_collision_with_floor(self, setup_bird):
+    def test_collision_with_floor(self, default_bird):
         """Teste de colisão com o chão"""
 
         # Posicionar abaixo do chão
@@ -124,7 +124,7 @@ class TestBird:
         bird.update(0, pipe, False)
         assert bird.is_alive == False
 
-    def test_collision_with_ceiling(self, setup_bird):
+    def test_collision_with_ceiling(self, default_bird):
         """Teste de colisão com o teto"""
 
         # Posicionar acima do teto
@@ -135,25 +135,26 @@ class TestBird:
 
         assert bird.is_alive == False
 
-    def test_collision_with_pipe(self, setup_bird):
+    def test_collision_with_pipe(self, default_bird):
         """Teste de colisão com o cano"""
 
-        bird = Bird()
+        bird = default_bird
         pipe = Pipe(x = Bird.X, y_lower = bird.y)
 
         # Simular colisão
-        with patch.object(pg.mask.Mask, 'overlap', return_value = (0, 0)):
-            bird.update(0, pipe, False)
+        MockMask.set_overlap_return_value(collides = True)
+        bird.update(0, pipe, False)
         assert not bird.is_alive
 
-    def test_no_collision_distant_pipe(self, setup_bird):
+    def test_no_collision_distant_pipe(self, default_bird):
         """Teste sem colisão com cano distante"""
 
-        bird = Bird()
+        bird = default_bird
 
         # Cano distante
-        pipe = Pipe(x = Bird.X + Bird.WIDTH + 50)
+        pipe = Pipe.new_pipe(x = Bird.X + Bird.WIDTH + 50)
 
+        MockMask.set_overlap_return_value(collides = False)
         bird.update(0, pipe, False)
 
         assert bird.is_alive
