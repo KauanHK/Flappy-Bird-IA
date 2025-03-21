@@ -1,4 +1,3 @@
-import pygame as pg
 import numpy as np
 from numpy.typing import NDArray
 from .ui import FlappyBirdUI
