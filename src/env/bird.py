@@ -4,6 +4,8 @@ from .utils import load_img, Image, centralize_x, SCREEN_CENTER_X, SCREEN_CENTER
 from typing import Literal
 
 
+class DeadBirdError(BaseException): ...
+
 class Bird:
 
     WIDTH: int = 80
@@ -40,15 +42,15 @@ class Bird:
         """
 
         if not self.is_alive:
-            return
+            raise DeadBirdError('Não pode atualizar um pássaro que já morreu')
 
         if not isinstance(action, bool) or action not in (0, 1):
             raise ValueError('A ação deve ser um booleano, 0 ou 1.')
         
         if action:
             self.velocity_y = Bird.LIFT
-
-        self.velocity_y += Bird.GRAVITY
+        else:
+            self.velocity_y += Bird.GRAVITY
         self.y += self.velocity_y
 
         if self._collided(next_pipe):
