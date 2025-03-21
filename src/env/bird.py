@@ -44,7 +44,7 @@ class Bird:
         if not self.is_alive:
             raise DeadBirdError('Não pode atualizar um pássaro que já morreu')
 
-        if not isinstance(action, bool) or action not in (0, 1):
+        if not isinstance(action, bool) and action not in (0, 1):
             raise ValueError('A ação deve ser um booleano, 0 ou 1.')
         
         if action:
