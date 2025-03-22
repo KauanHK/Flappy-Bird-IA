@@ -1,21 +1,19 @@
 import pytest
 from unittest.mock import patch
+
+import pygame as pg
 from typing import Self
 
 
 class MockMask:
     _collides: bool = False
 
-    def __init__(self, size: tuple[int, int], fill: bool = False) -> None:
+    def __init__(self, surface: pg.Surface, threshold: int = 127) -> None:
 
-        if (
-                not isinstance(size, tuple) or
-                len(size) != 2 or
-                not (all(isinstance(n, int) for n in size))
-        ):
-            raise TypeError(f"Parâmetro 'size' deve ser uma tupla de dois int's, não {type(size).__name__}")
-        if not isinstance(fill, bool):
-            raise TypeError(f"Parâmetro 'fill' deve ser do tipo bool, não {type(fill).__name__}")
+        if not isinstance(surface, pg.Surface):
+            raise TypeError(f"Parâmetro 'surface' deve ser do tipo pygame.Surface, não {type(surface).__name__}")
+        if not isinstance(threshold, int):
+            raise TypeError(f"Parâmetro 'threshold' deve ser do tipo int, não {type(threshold).__name__}")
 
     def overlap(self, other: Self, offset: tuple[int, int]) -> tuple[int, int] | None:
 
@@ -33,11 +31,12 @@ class MockMask:
 
 @pytest.fixture(scope = 'session', autouse = True)
 def setup():
-    with patch('pygame.mask.from_surface', return_value = lambda *args, **kwargs: MockMask(*args, **kwargs)):
+    with patch('pygame.mask.from_surface') as mock:
+        mock.side_effect = lambda *args, **kwargs: MockMask(*args, **kwargs)
         yield
 
 
 @pytest.fixture
-def default_bird(setup):
+def default_bird():
     from src.env import Bird
     return Bird()

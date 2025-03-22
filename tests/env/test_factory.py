@@ -1,6 +1,6 @@
 import pytest
 
-from .conftest import MockMask
+from ..conftest import MockMask
 
 from src.env import Bird, Pipe
 
@@ -19,6 +19,7 @@ def test_invalid_params_mock_mask(size, fill):
 
 
 def test_mocks():
-    assert isinstance(Bird.MASK, MockMask)
-    assert isinstance(Pipe.MASK_UPPER, MockMask)
-    assert isinstance(Pipe.MASK_LOWER, MockMask)
+    
+    assert isinstance(Bird.get_mask(), MockMask)
+    assert isinstance(Pipe.get_mask_upper(), MockMask)
+    assert isinstance(Pipe.get_mask_lower(), MockMask)
