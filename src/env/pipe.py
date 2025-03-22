@@ -11,15 +11,16 @@ class Pipe:
     HEIGHT: int = SCREEN_HEIGHT
     SIZE: tuple[int, int] = (WIDTH, HEIGHT)
 
-    IMAGE_UPPER: pg.Surface = load_img(Image.PIPE, SIZE)
-    IMAGE_LOWER: pg.Surface = pg.transform.flip(IMAGE_UPPER, False, True)
+    _IMAGE_UPPER: pg.Surface | None = None
+    _IMAGE_LOWER: pg.Surface | None = None
 
-    MASK_UPPER: pg.Mask = pg.mask.from_surface(IMAGE_UPPER)
-    MASK_LOWER: pg.Mask = pg.mask.from_surface(IMAGE_LOWER)
+    _MASK_UPPER: pg.Mask | None = None
+    _MASK_LOWER: pg.Mask | None = None
 
     GAP: int = 150
     MIN_Y: int = GAP
     MAX_Y: int = SCREEN_HEIGHT - GAP
+    VELOCITY_X: int = -3
 
     def __init__(self, x: int, y_lower: int) -> None:
         """Inicializa um cano.
@@ -30,8 +31,31 @@ class Pipe:
 
         self.x: int = x
         self.y_lower: int = y_lower
-        self.y_upper: int = y_lower - Pipe.GAP - Pipe.IMAGE_UPPER.get_height()
-        self.velocity_x: int = -3
+        self.y_upper: int = y_lower - Pipe.GAP - Pipe.get_image_upper().get_height()
+
+    @classmethod
+    def get_image_upper(cls) -> pg.Surface:
+        if cls._IMAGE_UPPER is None:
+            cls._IMAGE_UPPER = load_img(Image.PIPE, cls.SIZE)
+        return cls._IMAGE_UPPER
+    
+    @classmethod
+    def get_image_lower(cls) -> pg.Surface:
+        if cls._IMAGE_LOWER is None:
+            cls._IMAGE_LOWER = pg.transform.flip(cls.get_image_upper(), False, True)
+        return cls._IMAGE_LOWER
+    
+    @classmethod
+    def get_mask_upper(cls) -> pg.Mask:
+        if cls._MASK_UPPER is None:
+            cls._MASK_UPPER = pg.mask.from_surface(cls.get_image_upper())
+        return cls._MASK_UPPER
+    
+    @classmethod
+    def get_mask_lower(cls) -> pg.Mask:
+        if cls._MASK_LOWER is None:
+            cls._MASK_LOWER = pg.mask.from_surface(cls.get_image_lower())
+        return cls._MASK_LOWER
 
     @classmethod
     def new_pipe(cls, x: int) -> Self:
@@ -48,12 +72,12 @@ class Pipe:
 
     def update(self) -> None:
         """Atualiza o cano."""
-        self.x += self.velocity_x
+        self.x += Pipe.VELOCITY_X
 
     def render(self, screen: pg.Surface) -> None:
         """Renderiza o cano em screen."""
-        screen.blit(self.IMAGE_UPPER, (self.x, self.y_upper))
-        screen.blit(self.IMAGE_LOWER, (self.x, self.y_lower))
+        screen.blit(self.get_image_upper(), (self.x, self.y_upper))
+        screen.blit(self.get_image_lower(), (self.x, self.y_lower))
 
     def __repr__(self) -> str:
         return f'Pipe(x={self.x}, y_lower={self.y_lower}, y_upper={self.y_upper})'

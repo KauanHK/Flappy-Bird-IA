@@ -6,16 +6,17 @@ from typing import Literal
 
 class DeadBirdError(BaseException): ...
 
+
 class Bird:
 
     WIDTH: int = 80
     HEIGHT: int = 80
     SIZE: tuple[int, int] = (WIDTH, HEIGHT)
 
-    IMAGE: pg.Surface = load_img(Image.BIRD, SIZE)
-    MASK: pg.Mask = pg.mask.from_surface(IMAGE)
+    _IMAGE: pg.Surface | None = None
+    _MASK: pg.Mask | None = None
 
-    X: int = centralize_x(IMAGE, SCREEN_CENTER_X)[0]
+    X: int = SCREEN_CENTER_X - WIDTH // 2
     GRAVITY: float = 0.5
     LIFT: int = -10
     FLOOR: int = SCREEN_HEIGHT - HEIGHT
@@ -33,6 +34,18 @@ class Bird:
         self.steps: int = 0
         self.is_alive: bool = True
         self.score: int = 0
+
+    @classmethod
+    def get_image(cls) -> pg.Surface:
+        if cls._IMAGE is None:
+            cls._IMAGE = load_img(Image.BIRD, cls.SIZE)
+        return cls._IMAGE
+    
+    @classmethod
+    def get_mask(cls) -> pg.Mask:
+        if cls._MASK is None:
+            cls._MASK = pg.mask.from_surface(cls.get_image())
+        return cls._MASK
 
     def update(self, action: bool | Literal[0, 1], next_pipe: Pipe, scored: bool) -> None:
         """Atualiza um pássaro.
@@ -64,7 +77,7 @@ class Bird:
 
     def render(self, screen: pg.Surface) -> None:
         """Renderiza o pássaro em screen."""
-        screen.blit(Bird.IMAGE, (Bird.X, self.y))
+        screen.blit(Bird.get_image(), (Bird.X, self.y))
 
     def _collided(self, pipe: Pipe) -> bool:
         """Retorna True se o colidiu com pipe, senão False."""
@@ -78,8 +91,8 @@ class Bird:
 
         offset_upper = (offset_x, pipe.y_upper - self.y)
         offset_lower = (offset_x, pipe.y_lower - self.y)
-        return Bird.MASK.overlap(pipe.MASK_UPPER, offset_upper) is not None\
-                or Bird.MASK.overlap(pipe.MASK_LOWER, offset_lower) is not None
+        return Bird.get_mask().overlap(pipe.get_mask_upper(), offset_upper) is not None\
+                or Bird.get_mask().overlap(pipe.get_mask_lower(), offset_lower) is not None
 
     def __repr__(self) -> str:
         return f'Bird(y={self.y}, velocity_y={self.velocity_y}, steps={self.steps}, is_alive={self.is_alive})'

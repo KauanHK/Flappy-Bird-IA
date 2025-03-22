@@ -22,7 +22,8 @@ class FlappyBirdAI:
     MUTATION_STRENGTH = 0.2  # Força da mutação
 
     MODELS_PATH = Path(__file__).parent.parent / "models"
-    SAVE_DIR = MODELS_PATH / datetime.now().strftime('%d-%m-%Y_%H:%M:%S')
+    os.makedirs(MODELS_PATH, exist_ok = True)
+    SAVE_DIR = MODELS_PATH / f"models_{len(os.listdir(str(MODELS_PATH))) + 1}"
     os.makedirs(SAVE_DIR, exist_ok = True)
 
     def __init__(self) -> None:
@@ -40,7 +41,7 @@ class FlappyBirdAI:
 
     def run(self) -> None:
 
-        print("--------------------------------------------------------------")
+        print("-"*40)
         print(f"Iniciando treinamento com {FlappyBirdAI.NUM_BIRDS} pássaros")
         print(f"Elite: {FlappyBirdAI.ELITE_PERCENTAGE:0%}%, Aleatórios: {FlappyBirdAI.RANDOM_PERCENTAGE:0%}%")
         print(f"Taxa de mutação: {FlappyBirdAI.MUTATION_RATE}, Força: {FlappyBirdAI.MUTATION_STRENGTH}")
@@ -143,7 +144,7 @@ class FlappyBirdAI:
 
             # Coletar ações de todas as redes neurais
             actions = []
-            for i, (nn, state, bird) in enumerate(zip(self.nns, states, self.env.birds)):
+            for nn, state, bird in zip(self.nns, states, self.env.birds):
                 if bird.is_alive:
                     actions.append(nn.predict(state.reshape(-1, 1)))
                 else:
@@ -160,7 +161,7 @@ class FlappyBirdAI:
         # Avaliar desempenho
         scores = [bird.score for bird in self.env.birds]
         steps = [bird.steps for bird in self.env.birds]
-        best_index = np.argmax(scores)
+        best_index = np.argmax(steps)
 
         # Atualizar melhor de todos os tempos
         if steps[best_index] > self.best_steps_ever:
@@ -169,7 +170,7 @@ class FlappyBirdAI:
             self.best_nn_ever = self.nns[best_index]
 
             # Salvar o novo melhor modelo
-            with open(f"{FlappyBirdAI.SAVE_DIR}/best_model_ever.pkl", "wb") as f:
+            with open(FlappyBirdAI.SAVE_DIR / "best_model_ever.pkl", "wb") as f:
                 pickle.dump(self.best_nn_ever, f)
 
         # Exibir estatísticas
@@ -221,10 +222,10 @@ class FlappyBirdAI:
             self.env.render()
 
 if __name__ == '__main__':
-    # FlappyBirdAI().run()
-    try:
-        FlappyBirdAI().run_model()
-    except Exception as e:
-        import pygame as pg
-        pg.quit()
-        raise
+    FlappyBirdAI().run()
+    # try:
+    #     FlappyBirdAI().run_model()
+    # except Exception as e:
+    #     import pygame as pg
+    #     pg.quit()
+    #     raise
