@@ -21,11 +21,6 @@ class FlappyBirdAI:
     MUTATION_RATE = 0.1  # Taxa de mutação
     MUTATION_STRENGTH = 0.2  # Força da mutação
 
-    MODELS_PATH = Path(__file__).parent.parent / "models"
-    os.makedirs(MODELS_PATH, exist_ok = True)
-    SAVE_DIR = MODELS_PATH / f"models_{len(os.listdir(str(MODELS_PATH))) + 1}"
-    os.makedirs(SAVE_DIR, exist_ok = True)
-
     def __init__(self) -> None:
 
         # Inicializar ambiente e redes neurais
@@ -35,7 +30,6 @@ class FlappyBirdAI:
         # Inicializar melhores desempenhos e rede neural
         self.best_score_ever = 0
         self.best_steps_ever = 0
-        self.best_nn_ever = None
 
         self._pause = False
 
@@ -60,12 +54,6 @@ class FlappyBirdAI:
         # Fim do treinamento
         print("\n--- Treinamento concluído ---")
         print(f"Melhor pontuação alcançada: {self.best_steps_ever}")
-
-        # Salvar o melhor modelo final
-        if self.best_nn_ever is not None:
-            with open(f"{FlappyBirdAI.SAVE_DIR}/best_model_final.pkl", "wb") as f:
-                pickle.dump(self.best_nn_ever, f)
-            print(f"Modelo final salvo em {FlappyBirdAI.SAVE_DIR}/best_model_final.pkl")
 
         self.env.close()
 
@@ -122,8 +110,6 @@ class FlappyBirdAI:
             if event.type == pg.QUIT:
                 # Salvar o melhor modelo antes de sair
                 self.update_stats()
-                with open(f"{FlappyBirdAI.SAVE_DIR}/best_model_final.pkl", "wb") as f:
-                    pickle.dump(self.best_nn_ever, f)
                 self.env.close()
                 raise QuitPygame
 
@@ -167,65 +153,12 @@ class FlappyBirdAI:
         if steps[best_index] > self.best_steps_ever:
             self.best_steps_ever = steps[best_index]
             self.best_score_ever = scores[best_index]
-            self.best_nn_ever = self.nns[best_index]
-
-            # Salvar o novo melhor modelo
-            with open(FlappyBirdAI.SAVE_DIR / "best_model_ever.pkl", "wb") as f:
-                pickle.dump(self.best_nn_ever, f)
 
         # Exibir estatísticas
         print(f"Melhor pontuação: {scores[best_index]}")
         print(f"Melhor pontuação de todos os tempos: {self.best_score_ever}")
 
-    def run_model(self) -> None:
-
-        models = os.listdir(str(FlappyBirdAI.MODELS_PATH))
-        for i, model in enumerate(models):
-            print(f"{i}: {model}")
-
-        for _ in range(5):
-            try:
-                model_index = int(input('Escolha um modelo: '))
-            except (TypeError, ValueError, IndexError):
-                print('Valor inválido.')
-            else:
-                break
-        else:
-            raise ValueError('Nenhum número válido foi digitado.')
-
-        models_files_path = FlappyBirdAI.MODELS_PATH / models[model_index]
-        models_files = os.listdir(models_files_path)
-        for i, model in enumerate(models_files):
-            print(f"{i}: {model}")
-
-        for _ in range(5):
-            try:
-                model_index = int(input('Escolha um modelo: '))
-            except (TypeError, ValueError, IndexError):
-                print('Valor inválido.')
-            else:
-                break
-        else:
-            raise ValueError('Nenhum número válido foi digitado.')
-
-        path = models_files_path / models_files[model_index]
-        print(f"Carregando modelo {path}...")
-
-        with open(path, "rb") as f:
-            nn = pickle.load(f)
-        print(nn)
-
-        self.env.num_birds = 1
-        state = self.env.reset()[0]
-        while not self.env.done:
-            self.env.step([nn.predict(state.reshape(-1, 1))])
-            self.env.render()
 
 if __name__ == '__main__':
     FlappyBirdAI().run()
-    # try:
-    #     FlappyBirdAI().run_model()
-    # except Exception as e:
-    #     import pygame as pg
-    #     pg.quit()
-    #     raise
+    
