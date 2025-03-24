@@ -44,7 +44,8 @@ class FlappyBird:
         self.steps = 0
         self.score = 0
 
-        self.ui.reset()
+        if hasattr(self, 'ui'):
+            self.ui.reset()
 
         return self.get_states()
 
@@ -71,7 +72,8 @@ class FlappyBird:
             if bird.is_alive:
                 bird.update(bool(action), next_pipes[0], scored)
 
-        self.ui.update(len(self.birds_alive), self.score)
+        if hasattr(self, 'ui'):
+            self.ui.update(len(self.birds_alive), self.score)
         return self.get_states()
 
     def get_states(self) -> list[NDArray]:
